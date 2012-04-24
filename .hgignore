@@ -1,0 +1,14 @@
+syntax: glob
+
+
+# Python-specific build output
+*.pyd
+*.pyc
+*.pyo
+
+# python builds
+build\
+dist\
+
+glob:.idea/*
+glob:.redist/*
