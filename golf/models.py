@@ -3,6 +3,12 @@
 from django.db import models
 
 
+class GolfRegion(models.Model):
+    name = models.CharField(max_length=512, db_index=True)
+
+    def __unicode__(self):
+        return u"%s" % self.name
+
 
 class GolfClub(models.Model):
     name = models.CharField(max_length=512, db_index=True)
@@ -39,7 +45,7 @@ class UpdateLine(models.Model):
 
     player = models.ForeignKey(Player)
 
-    region = models.CharField(max_length=64)
+    region = models.ForeignKey(GolfRegion)
     section = models.CharField(max_length=8)
     division = models.CharField(max_length=16)
 
@@ -61,7 +67,7 @@ class LeaderBoard(models.Model):
     date = models.DateField()
     host_golfclub = models.ForeignKey(GolfClub)
 
-    region = models.CharField(max_length=64)
+    region = models.ForeignKey(GolfRegion)
     section = models.CharField(max_length=8)
     division = models.CharField(max_length=16)
 

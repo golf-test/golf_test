@@ -31,6 +31,42 @@ def parse_date(s):
     return date(year=t.tm_year, month=t.tm_mon, day=t.tm_mday)
 
 
+def ensure_clubs(csv_records):
+    # заполнить клубы
+    clubs = set(
+        chain(
+            (rec["Home Golf Club"] for rec in csv_records),
+            (rec["Host Golf Club"] for rec in csv_records),
+        )
+    )
+    # вытащить из базы найденые имена клубов
+    clubs_in_db = set((c["name"] for c in GolfClub.objects.filter(name__in=clubs).values("name")))
+    # новые клубы добавить в базу
+    clubs_new = clubs - clubs_in_db
+    for club_name in clubs_new:
+        club_obj = GolfClub.objects.create(name=club_name)
+
+    # собственно клубы
+    clubs_map = dict(((club_obj.name, club_obj) for club_obj in GolfClub.objects.all()))
+    return clubs_map
+
+
+def ensure_regions(csv_records):
+    # регионы
+    regions = set(
+        (rec["Golf Region"] for rec in csv_records)
+    )
+    # вытащить из базы найденые имена регионов
+    regions_in_db = set((c["name"] for c in GolfRegion.objects.filter(name__in=regions).values("name")))
+    # новые регионы добавить в базу
+    regions_new = regions - regions_in_db
+    for regions_name in regions_new:
+        region_obj = GolfRegion.objects.create(name=regions_name)
+
+    # собственно регионы
+    regions_map = dict(((region_obj.name, region_obj) for region_obj in GolfRegion.objects.all()))
+    return regions_map
+
 
 @transaction.commit_on_success
 def load_csv(csv_file_name, overwrite=True):
@@ -53,22 +89,9 @@ def load_csv(csv_file_name, overwrite=True):
         rdr = csv.DictReader(csv_fl, delimiter=';')
         csv_records = [rec for rec in rdr]
 
-    # заполнить клубы
-    clubs = set(
-        chain(
-            (rec["Home Golf Club"] for rec in csv_records),
-            (rec["Host Golf Club"] for rec in csv_records),
-        )
-    )
-    # вытащить из базы найденые имена клубов
-    clubs_in_db = set((c["name"] for c in GolfClub.objects.filter(name__in=clubs).values("name")))
-    # новые клубы добавить в базу
-    clubs_new = clubs - clubs_in_db
-    for club_name in clubs_new:
-        club_obj = GolfClub.objects.create(name=club_name)
+    clubs_map = ensure_clubs(csv_records)
+    regions_map = ensure_regions(csv_records)
 
-    # собственно клубы
-    clubs_map = dict(((club_obj.name, club_obj) for club_obj in GolfClub.objects.all()))
 
     # теперь залить всех игроков
     # что считать ключом игрока?
@@ -88,7 +111,7 @@ def load_csv(csv_file_name, overwrite=True):
         # пишем данные в UpdateLine
         update_line_obj = update_obj.updateline_set.create(
             player=player_obj,
-            region=rec["Golf Region"],
+            region=regions_map[rec["Golf Region"]],
             section=rec["Section"],
             division=rec["Division"],
             event_date=parse_date(rec["Event Date"]),
@@ -105,12 +128,12 @@ def load_csv(csv_file_name, overwrite=True):
 @transaction.commit_on_success
 def fill_leaderboards():
     # раздробить все данные на регион\секцию\дивизион (хост-клуб региона сюда-же)
-    for host_club_id, region, section, division in UpdateLine.objects.all().values_list("host_golfclub", "region", "section", "division").distinct():
+    for host_club_id, region_id, section, division in UpdateLine.objects.all().values_list("host_golfclub", "region", "section", "division").distinct():
         # теперь можно посчитать лидерборды за те даты, за которые они не посчитаны.
         for (upd_date,) in UpdateLine.objects.all().values_list("event_date").distinct().order_by("event_date"):
             date_lte_q = models.Q(event_date__lte=upd_date)
-            fraction_q = models.Q(host_golfclub__pk=host_club_id, region=region, division=division, section=section)
-            #print "-", region, section, division, upd_date
+            fraction_q = models.Q(host_golfclub__pk=host_club_id, region__pk=region_id, division=division, section=section)
+            #print "-", region_id, section, division, upd_date
 
             if LeaderBoard.objects.filter(date=upd_date).filter(fraction_q).count():
                 # данные уже есть
@@ -119,7 +142,7 @@ def fill_leaderboards():
                 LeaderBoard.objects.filter(date=upd_date).filter(fraction_q).delete()
 
             #else:
-            lb_obj = LeaderBoard.objects.create(date=upd_date, host_golfclub_id=host_club_id, region=region, division=division, section=section)
+            lb_obj = LeaderBoard.objects.create(date=upd_date, host_golfclub_id=host_club_id, region_id=region_id, division=division, section=section)
 
             player_ids = set(
                 (v[0] for v in UpdateLine.objects.filter(fraction_q).filter(date_lte_q).values_list("player").distinct()))
@@ -172,9 +195,9 @@ def fill_leaderboards():
 
 def update_leaderboards_positions():
     # теперь нужно посчитать результаты для каждого лидерборда по сравнению с предыдущим.
-    for host_club_id, region, section, division in UpdateLine.objects.all().values_list("host_golfclub", "region",
+    for host_club_id, region_id, section, division in UpdateLine.objects.all().values_list("host_golfclub", "region",
         "section", "division").distinct():
-        fraction_q = models.Q(host_golfclub__pk=host_club_id, region=region, division=division, section=section)
+        fraction_q = models.Q(host_golfclub__pk=host_club_id, region__pk=region_id, division=division, section=section)
 
         while True:
             # берем самый давний лидерборд, для которого не посчитан счет.

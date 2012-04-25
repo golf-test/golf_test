@@ -4,17 +4,19 @@ from django.contrib import admin
 from models import *
 
 
-
-class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("pk", "first_name", "last_name", "email", "phone_number")
-admin.site.register(Player, PlayerAdmin)
-
-
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+admin.site.register(GolfRegion, RegionAdmin)
 
 
 class GolfClubAdmin(admin.ModelAdmin):
     list_display = ("name",)
 admin.site.register(GolfClub, GolfClubAdmin)
+
+
+class PlayerAdmin(admin.ModelAdmin):
+    list_display = ("pk", "first_name", "last_name", "email", "phone_number")
+admin.site.register(Player, PlayerAdmin)
 
 
 class UpdateAdmin(admin.ModelAdmin):
