@@ -117,4 +117,4 @@ class LeaderBoardLine(models.Model):
 
 
     class Meta:
-        ordering = ("board", "-curr_position")
+        ordering = ("board", "-playoff_status", "-curr_position")

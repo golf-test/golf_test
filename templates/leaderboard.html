@@ -31,20 +31,38 @@
 
     <tbody>
         {% for ln in lines %}
-        <tr>
-            <td>{{ ln.playoff_status }}</td>
-            <td>{{ ln.latest_score }}</td>
-            <td>{{ ln.curr_position }}</td>
-            <td>{{ ln.prev_position }}</td>
-            <td>{{ ln.movement }}</td>
-            <td>{{ ln.player.last_name }}</td>
-            <td>{{ ln.player.first_name }}</td>
-            <td>{{ ln.curr_handicap }}</td>
-            <td>{{ ln.player.home_golfclub.name }}</td>
-            <td>{{ ln.top_round_1st }}</td>
-            <td>{{ ln.top_round_2nd }}</td>
-            <td>{{ ln.top_round_3rd }}</td>
-        </tr>
+        {% if ln.playoff_status == "Q" %}
+            <tr>
+                <td>{{ ln.playoff_status }}</td>
+                <td>{{ ln.latest_score }}</td>
+                <td>{{ ln.curr_position }}</td>
+                <td>{{ ln.prev_position }}</td>
+                <td>{{ ln.movement }}</td>
+                <td>{{ ln.player.last_name }}</td>
+                <td>{{ ln.player.first_name }}</td>
+                <td>{{ ln.curr_handicap }}</td>
+                <td>{{ ln.player.home_golfclub.name }}</td>
+                <td>{{ ln.top_round_1st }}</td>
+                <td>{{ ln.top_round_2nd }}</td>
+                <td>{{ ln.top_round_3rd }}</td>
+            </tr>
+        {% else %}
+            <tr style="color: #808080">
+                <td>{{ ln.playoff_status }}</td>
+                <td>{{ ln.latest_score }}</td>
+                <td>NQ</td>
+                <td>NQ</td>
+                <td>NQ</td>
+                <td>{{ ln.player.last_name }}</td>
+                <td>{{ ln.player.first_name }}</td>
+                <td>{{ ln.curr_handicap }}</td>
+                <td>{{ ln.player.home_golfclub.name }}</td>
+                <td>{{ ln.top_round_1st }}</td>
+                <td>{{ ln.top_round_2nd }}</td>
+                <td>{{ ln.top_round_3rd }}</td>
+                </font>
+            </tr>
+        {% endif %}
         {% endfor %}
     </tbody>
 </table>

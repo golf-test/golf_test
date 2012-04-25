@@ -55,7 +55,7 @@ def leaderboard(request):
 
     if LeaderBoard.objects.filter(q).count():
         board = LeaderBoard.objects.filter(q).order_by("-date")[0]
-        lines = board.leaderboardline_set.select_related().all().order_by("curr_position")
+        lines = board.leaderboardline_set.select_related().all().order_by("-playoff_status", "curr_position")
 
         fields = {}
         fields["date"] = board.date
