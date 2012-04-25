@@ -1,0 +1,53 @@
+<html>
+<head><title>LEADERBOARD</title></head>
+<body>
+
+
+<form method="get">
+  <label>Region:</label>{{ form.region }}<br/>
+  <label>Host Golf Club:</label>{{ form.host_golfclub }}<br/>
+  <label>Date:</label>{{ form.date }}<br/>
+  <label>Section:</label>{{ form.section }}<br/>
+  <label>Division:</label>{{ form.division }}<br/>
+  <input type=submit value="FIND">
+</form>
+
+
+<table border="1">
+    <thead>
+        <td>REGIONAL PLAYOFF STATUS</td>
+        <td>LATEST SCORE</td>
+        <td>POSITION CURRENT</td>
+        <td>POSITION PREVIOUS</td>
+        <td>MOVEMENT</td>
+        <td>PLAYER SURNAME</td>
+        <td>PLAYER FIRST NAME</td>
+        <td>HANDICAP CURRENT</td>
+        <td>HOME CLUB</td>
+        <td>TOP ROUND</td>
+        <td>2ND TOP ROUND</td>
+        <td>3RD TOP ROUND</td>
+    </thead>
+
+    <tbody>
+        {% for ln in lines %}
+        <tr>
+            <td>{{ ln.playoff_status }}</td>
+            <td>{{ ln.latest_score }}</td>
+            <td>{{ ln.curr_position }}</td>
+            <td>{{ ln.prev_position }}</td>
+            <td>{{ ln.movement }}</td>
+            <td>{{ ln.player.last_name }}</td>
+            <td>{{ ln.player.first_name }}</td>
+            <td>{{ ln.curr_handicap }}</td>
+            <td>{{ ln.player.home_golfclub.name }}</td>
+            <td>{{ ln.top_round_1st }}</td>
+            <td>{{ ln.top_round_2nd }}</td>
+            <td>{{ ln.top_round_3rd }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

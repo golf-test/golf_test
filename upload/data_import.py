@@ -106,6 +106,8 @@ def load_csv(csv_file_name, overwrite=True):
                 last_name=rec["Surname"],
                 email=rec["Email"],
                 phone_number=rec["Phone"],
+                golflink_number=rec["Golf Link Number"],
+                home_golfclub=clubs_map[rec["Home Golf Club"]],
             )
 
         # пишем данные в UpdateLine
@@ -115,8 +117,6 @@ def load_csv(csv_file_name, overwrite=True):
             section=rec["Section"],
             division=rec["Division"],
             event_date=parse_date(rec["Event Date"]),
-            golflink_number=rec["Golf Link Number"],
-            home_golfclub=clubs_map[rec["Home Golf Club"]],
             host_golfclub=clubs_map[rec["Host Golf Club"]],
             result=rec["Result"],
             handicap=rec["Handicap"],
@@ -156,8 +156,7 @@ def fill_leaderboards():
                 if ln.player_id not in fraction_scores:
                     fraction_scores[ln.player_id] = []
                 fraction_scores[ln.player_id].append(
-                        {"date": ln.event_date, "result": ln.result, "handicap": ln.handicap,
-                         "home club": ln.home_golfclub.name})
+                        {"date": ln.event_date, "result": ln.result, "handicap": ln.handicap})
 
 
             #pprint(fraction_scores)
@@ -166,7 +165,6 @@ def fill_leaderboards():
                 # счет последнего обновления
                 latest_score = fraction_scores[player_id][-1]["result"]
                 handicap_current = fraction_scores[player_id][-1]["handicap"]
-                home_club = fraction_scores[player_id][-1]["home club"]
 
                 # топы - 1st, 2nd, 3rd
                 top_results = [ln.result for ln in
@@ -193,6 +191,7 @@ def fill_leaderboards():
 
 
 
+@transaction.commit_on_success
 def update_leaderboards_positions():
     # теперь нужно посчитать результаты для каждого лидерборда по сравнению с предыдущим.
     for host_club_id, region_id, section, division in UpdateLine.objects.all().values_list("host_golfclub", "region",

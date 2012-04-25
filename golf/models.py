@@ -22,9 +22,13 @@ class Player(models.Model):
     first_name = models.CharField(max_length=256)
     last_name = models.CharField(max_length=256)
 
-    # что мешает игрокам менять номера телефонов или емэйлы? или даже имена? а шли бы они, редкое это событие, руками перебить можно будет.
+    # что мешает игрокам менять номера телефонов или емэйлы? или даже имена?
     email = models.EmailField(db_index=True, unique=True)
     phone_number = models.CharField(max_length=32)
+
+    # что мешает игрока переходить в другие клубы или менять номер? причем прямо посреди сезона, или что там у них.
+    golflink_number = models.CharField(max_length=32)
+    home_golfclub = models.ForeignKey(GolfClub, related_name="homeclub_set")
 
     def __unicode__(self):
         return u"%s %s <%s>" % (self.first_name, self.last_name, self.email)
@@ -51,11 +55,7 @@ class UpdateLine(models.Model):
 
     event_date = models.DateField()
 
-    # что мешает игрока переходить в другие клубы или менять номер? а ничего не мешает.
-    golflink_number = models.CharField(max_length=32)
-    home_golfclub = models.ForeignKey(GolfClub, related_name="homeclub_set")
-
-    host_golfclub = models.ForeignKey(GolfClub, related_name="hostclub_set")
+    host_golfclub = models.ForeignKey(GolfClub)
 
     result = models.IntegerField()
     handicap = models.IntegerField()
@@ -67,14 +67,18 @@ class LeaderBoard(models.Model):
     date = models.DateField()
     host_golfclub = models.ForeignKey(GolfClub)
 
-    region = models.ForeignKey(GolfRegion)
-    section = models.CharField(max_length=8)
-    division = models.CharField(max_length=16)
+    region = models.ForeignKey(GolfRegion, db_index=True)
+    section = models.CharField(max_length=8, db_index=True, choices=(("A", "A"), ("B", "B")))
+    division = models.CharField(max_length=16, db_index=True, choices=(("M1", "MEN 1"), ("M2", "MEN 2"), ("W1", "WOMEN 1"), ("W2", "WOMEN 2"), ("J", "JUNIOR")))
 
     scored_against = models.ForeignKey("LeaderBoard", null=True)
 
     def __unicode__(self):
         return u"%s <%s/%s/%s>" % (self.date, self.region, self.section, self.division)
+
+    @staticmethod
+    def date_choices():
+        return [(r["date"], r["date"]) for r in LeaderBoard.objects.all().values("date").distinct()]
 
 
 
@@ -94,7 +98,12 @@ class LeaderBoardLine(models.Model):
             return "NQ"
         if not self.curr_position or not self.prev_position:
             return "-"
-        return self.curr_position - self.prev_position
+        d = self.prev_position - self.curr_position
+        if d > 0:
+            d = "+%s" % d
+        else:
+            d = "%s" % d
+        return d
 
     curr_handicap = models.IntegerField()
 

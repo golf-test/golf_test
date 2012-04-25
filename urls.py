@@ -6,7 +6,10 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    # url(r'^$', 'golf_test.views.home', name='home'),
+
+    url(r'^$', "golf_test.golf.views.leaderboard", name='leaderboard'),
+    #url(r'^$', 'golf_test.views.leaderboard', name='leaderboard'),
+
     # url(r'^golf_test/', include('golf_test.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:

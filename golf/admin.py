@@ -15,7 +15,7 @@ admin.site.register(GolfClub, GolfClubAdmin)
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("pk", "first_name", "last_name", "email", "phone_number")
+    list_display = ("pk", "first_name", "last_name", "email", "phone_number", "golflink_number", "home_golfclub",)
 admin.site.register(Player, PlayerAdmin)
 
 
@@ -26,8 +26,7 @@ admin.site.register(Update, UpdateAdmin)
 
 class UpdateLineAdmin(admin.ModelAdmin):
     list_display = ("pk", "player", "result", "handicap",
-                    "region", "section", "division", "event_date", "golflink_number",
-                    "home_golfclub", "host_golfclub", )
+                    "region", "section", "division", "event_date", "host_golfclub", )
 admin.site.register(UpdateLine, UpdateLineAdmin)
 
 
